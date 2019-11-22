@@ -15,11 +15,7 @@ PLAYER_GRAV = 0.8
 PLAYER_JUMP = 16
 
 # Starting platforms
-PLATFORM_LIST = [(0, HEIGHT - 60),
-                 (WIDTH / 2 - 50, HEIGHT * 3 / 4 - 50),
-                 (125, HEIGHT - 350),
-                 (350, 200),
-                 (175, 100)]
+PLATFORM_LIST = [(x*WIDTH//6,HEIGHT-60) for x in range(6)]
 
 # define colors
 WHITE = (255, 255, 255)
