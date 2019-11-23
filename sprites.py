@@ -13,7 +13,7 @@ class Spritesheet:
         # grab an image out of a larger spritesheet
         image = pg.Surface((width, height))
         image.blit(self.spritesheet, (0, 0), (x, y, width, height))
-        image = pg.transform.scale(image, (width // 4, height // 4))
+        image = pg.transform.scale(image, (width // 2, height // 2))
         return image
 
 class Player(pg.sprite.Sprite):
@@ -27,24 +27,25 @@ class Player(pg.sprite.Sprite):
         self.load_images()
         self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
-        self.rect.center = (40, HEIGHT - 100)
-        self.pos = vec(40, HEIGHT - 100)
+        self.rect.center = (40, HEIGHT - 115)
+        self.pos = vec(40, HEIGHT - 115)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
     def load_images(self):
-        self.standing_frames = [self.game.spritesheet2.get_image(0, 472, 430, 420),
-                                self.game.spritesheet2.get_image(680, 0, 430, 420)]
+        self.standing_frames = [self.game.spritesheet2.get_image(0, 236, 215, 210),
+                                self.game.spritesheet2.get_image(340, 0, 215, 210)]
         for frame in self.standing_frames:
             frame.set_colorkey(BLACK)
-        self.walk_frames_r = [self.game.spritesheet2.get_image(680, 944, 430, 420),
-                              self.game.spritesheet2.get_image(0, 944, 430, 420)]
+        self.walk_frames_r = [self.game.spritesheet2.get_image(340, 472, 215, 210),
+                              self.game.spritesheet2.get_image(0, 472, 215, 210)]
         self.walk_frames_l = []
         for frame in self.walk_frames_r:
             frame.set_colorkey(BLACK)
             self.walk_frames_l.append(pg.transform.flip(frame, True, False))
-        self.jump_frame = self.game.spritesheet2.get_image(680, 472, 430, 420)
+        self.jump_frame = self.game.spritesheet2.get_image(340, 236, 215, 210)
         self.jump_frame.set_colorkey(BLACK)
+
 
     def jump(self):
         # jump only if standing on a platform
@@ -69,15 +70,14 @@ class Player(pg.sprite.Sprite):
         self.vel += self.acc
         if abs(self.vel.x) < 0.1:
             self.vel.x = 0
-        self.pos += self.vel + 0.5 * self.acc
-        self.rect.midbottom = self.pos
-        # wrap around the sides of the screen
-        '''
-        if self.pos.x > WIDTH + self.rect.width / 2:
-            self.pos.x = 0 - self.rect.width / 2
-        if self.pos.x < 0 - self.rect.width / 2:
-            self.pos.x = WIDTH + self.rect.width / 2
-        '''
+        #self.pos += self.vel + 0.5 * self.acc
+        # Updates y position of player
+        self.pos.y += self.vel.y + 0.5 * self.acc.y
+
+        # Moves the platforms in reverse of the player
+        for plat in self.game.platforms:
+            plat.rect.x -=self.vel.x + 0.5 * self.acc.x
+
         
     def animate(self):
         now = pg.time.get_ticks()
