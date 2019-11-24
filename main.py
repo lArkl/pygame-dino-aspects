@@ -31,21 +31,41 @@ class Game:
                 self.highscore = int(f.read())
             except:
                 self.highscore = 0
-        # load spritesheet image
+        # load background
+        self.spritesheet3 = Spritesheet(path.join(img_dir, BACKGROUND))
+        # load base sprite
         self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
+        # load player sprite
         self.spritesheet2 = Spritesheet(path.join(img_dir, SPRITESHEET2))
 
     def new(self):
         # start a new game
         self.score = 0
         self.all_sprites = pg.sprite.Group()
+        
+        
         self.platforms = pg.sprite.Group()
         self.player = Player(self)
         self.all_sprites.add(self.player)
-        for plat in PLATFORM_LIST:
-            p = Platform(self, *plat)
+        
+        # Adding platform
+        platform_full=False
+        px = 0
+        while not platform_full:
+            p = Platform(self, px,0)
+            p.rect.y = HEIGHT - p.rect.height + 5
+            px = p.rect.right
             self.all_sprites.add(p)
             self.platforms.add(p)
+            if px >= WIDTH + p.rect.width:
+                platform_full = True
+                #print(px//p.rect.width)
+                self.total_platforms = px//p.rect.width
+                self.right_platform = p.rect.right
+                #print(self.right_platform)
+
+        self.background = Background(self)
+        self.all_sprites.add(self.background)
         self.run()
 
     def run(self):
@@ -67,10 +87,12 @@ class Game:
                 self.player.pos.y = hits[0].rect.top
                 self.player.vel.y = 0
 
-        # if player reaches top 1/4 of screen
+        # if platform leaves the screen
         for plat in self.platforms:
-            plat.rect.x -= min(abs(self.player.vel.x), 2)
+            #plat.rect.x -= max(abs(self.player.vel.x), 2)
             if plat.rect.right <= 0:
+                self.right_platform += plat.rect.left 
+                print('destroyed!',self.right_platform)
                 plat.kill()
                 self.score += 10
 
@@ -84,10 +106,12 @@ class Game:
             self.playing = False
 
         # spawn new platforms to keep same average number
-        while len(self.platforms) < 5:
-            xi = 5*WIDTH//6 #self.platforms[3].rect.right
-            p = Platform(self, random.randrange(xi, xi + 30),
-                HEIGHT-60)
+        if len(self.platforms) < self.total_platforms:
+            
+            p = Platform(self, self.right_platform,HEIGHT)
+            p.rect.y -= p.rect.height + 5
+            self.right_platform = p.rect.right
+            #p.rect.x -= p.rect.width
             self.platforms.add(p)
             self.all_sprites.add(p)
 
@@ -95,7 +119,7 @@ class Game:
         # Game Loop - events
         for event in pg.event.get():
             # check for closing window
-            if event.type == pg.QUIT:
+            if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_q):
                 if self.playing:
                     self.playing = False
                 self.running = False

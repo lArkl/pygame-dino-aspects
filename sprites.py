@@ -9,11 +9,11 @@ class Spritesheet:
     def __init__(self, filename):
         self.spritesheet = pg.image.load(filename).convert()
 
-    def get_image(self, x, y, width, height):
+    def get_image(self, x, y, width, height,scaler=0.5):
         # grab an image out of a larger spritesheet
         image = pg.Surface((width, height))
         image.blit(self.spritesheet, (0, 0), (x, y, width, height))
-        image = pg.transform.scale(image, (width // 2, height // 2))
+        image = pg.transform.scale(image, (int(width*scaler), int(height*scaler)))
         return image
 
 class Player(pg.sprite.Sprite):
@@ -27,8 +27,8 @@ class Player(pg.sprite.Sprite):
         self.load_images()
         self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
-        self.rect.center = (40, HEIGHT - 115)
-        self.pos = vec(40, HEIGHT - 115)
+        self.rect.center = (60, HEIGHT - 115)
+        self.pos = vec(60, HEIGHT - 115)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
@@ -49,9 +49,9 @@ class Player(pg.sprite.Sprite):
 
     def jump(self):
         # jump only if standing on a platform
-        self.rect.y += 2
+        self.rect.y += 10
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
-        self.rect.y -= 2
+        self.rect.y -= 10
         if hits:
             self.vel.y = -PLAYER_JUMP
 
@@ -71,12 +71,18 @@ class Player(pg.sprite.Sprite):
         if abs(self.vel.x) < 0.1:
             self.vel.x = 0
         #self.pos += self.vel + 0.5 * self.acc
+        
         # Updates y position of player
         self.pos.y += self.vel.y + 0.5 * self.acc.y
+        self.rect.midbottom = self.pos
 
         # Moves the platforms in reverse of the player
         for plat in self.game.platforms:
-            plat.rect.x -=self.vel.x + 0.5 * self.acc.x
+            plat.rect.x -= (self.vel.x + 0.5 * self.acc.x)
+        # Move background
+        #self.game.background.rect.x -= (self.vel.x + 0.5 * self.acc.x)
+        
+        #self.game.right_platform-= (self.vel.x + 0.5 * self.acc.x)
 
         
     def animate(self):
@@ -111,10 +117,22 @@ class Platform(pg.sprite.Sprite):
     def __init__(self, game, x, y):
         pg.sprite.Sprite.__init__(self)
         self.game = game
-        images = [self.game.spritesheet.get_image(0, 288, 380, 94),
-                  self.game.spritesheet.get_image(213, 1662, 201, 100)]
+        sc = 1.2
+        images = [self.game.spritesheet.get_image(0, 0, 315, 90,sc)]
+                  #self.game.spritesheet.get_image(0, 95, 315, 90,sc)]
         self.image = choice(images)
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+
+
+class Background(pg.sprite.Sprite):
+    def __init__(self, game):
+        pg.sprite.Sprite.__init__(self)
+        self.game = game
+        sc = 6/9
+        self.image = self.game.spritesheet3.get_image(0, 0, 1920, 1080,sc)
+                  #self.game.spritesheet.get_image(0, 95, 315, 90,sc)]
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
