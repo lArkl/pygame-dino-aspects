@@ -20,20 +20,19 @@ class Player(pg.sprite.Sprite):
     def __init__(self, game):
         pg.sprite.Sprite.__init__(self)
         self.game = game
-        self.walking = False
-        self.jumping = False
+        self.state = 'idle'
         self.current_frame = 0
         self.last_update = 0
         self.load_images()
         self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
-        self.rect.center = (60, HEIGHT - 115)
+        self.rect.midbottom = (60, HEIGHT - 115)
         self.pos = vec(60, HEIGHT - 115)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
     def load_images(self):
-        self.standing_frames = [self.game.spritesheet2.get_image(0, 236, 215, 210),
+        self.standing_frames = [self.game.spritesheet2.get_image(0, 0, 215, 210),
                                 self.game.spritesheet2.get_image(340, 0, 215, 210)]
         for frame in self.standing_frames:
             frame.set_colorkey(BLACK)
@@ -43,16 +42,15 @@ class Player(pg.sprite.Sprite):
         for frame in self.walk_frames_r:
             frame.set_colorkey(BLACK)
             self.walk_frames_l.append(pg.transform.flip(frame, True, False))
-        self.jump_frame = self.game.spritesheet2.get_image(340, 236, 215, 210)
-        self.jump_frame.set_colorkey(BLACK)
+        self.jump_frames = [self.game.spritesheet2.get_image(0, 236, 215, 210),
+                            self.game.spritesheet2.get_image(340, 236, 215, 210)]
+        for frame in self.jump_frames:
+            frame.set_colorkey(BLACK)
 
 
     def jump(self):
         # jump only if standing on a platform
-        self.rect.y += 10
-        hits = pg.sprite.spritecollide(self, self.game.platforms, False)
-        self.rect.y -= 10
-        if hits:
+        if self.pos.y == HEIGHT - 115:
             self.vel.y = -PLAYER_JUMP
 
     def update(self):
@@ -76,23 +74,26 @@ class Player(pg.sprite.Sprite):
         self.pos.y += self.vel.y + 0.5 * self.acc.y
         self.rect.midbottom = self.pos
 
-        # Moves the platforms in reverse of the player
-        for plat in self.game.platforms:
-            plat.rect.x -= (self.vel.x + 0.5 * self.acc.x)
         # Move background
-        #self.game.background.rect.x -= (self.vel.x + 0.5 * self.acc.x)
+        delta = self.vel.x + 0.5 * self.acc.x
+        self.game.background.rect.x -= delta
+        self.game.background2.rect.x = self.game.background.rect.right 
         
-        #self.game.right_platform-= (self.vel.x + 0.5 * self.acc.x)
-
+        # Move obstacles
+        for obs in self.game.obstacles:
+            obs.rect.x -= delta
         
     def animate(self):
         now = pg.time.get_ticks()
         if self.vel.x != 0:
-            self.walking = True
+            if self.pos.y < HEIGHT - 115:
+                self.state = 'jumping'
+            else:
+                self.state = 'walking'
         else:
-            self.walking = False
+            self.state = 'idle'
         # show walk animation
-        if self.walking:
+        if self.state == 'walking':
             if now - self.last_update > 180:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.walk_frames_l)
@@ -103,8 +104,16 @@ class Player(pg.sprite.Sprite):
                     self.image = self.walk_frames_l[self.current_frame]
                 self.rect = self.image.get_rect()
                 self.rect.bottom = bottom
+        elif self.state == 'jumping':
+            if now - self.last_update > 180:
+                self.last_update = now
+                self.current_frame = (self.current_frame + 1) % len(self.walk_frames_l)
+                bottom = self.rect.bottom
+                self.image = self.jump_frames[self.current_frame]
+                self.rect = self.image.get_rect()
+                self.rect.bottom = bottom
         # show idle animation
-        if not self.jumping and not self.walking:
+        else: #self.state == 'idle':
             if now - self.last_update > 350:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
@@ -113,26 +122,28 @@ class Player(pg.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.bottom = bottom
 
-class Platform(pg.sprite.Sprite):
-    def __init__(self, game, x, y):
+
+
+class Background(pg.sprite.Sprite):
+    def __init__(self, game,x=0):
         pg.sprite.Sprite.__init__(self)
         self.game = game
-        sc = 1.2
-        images = [self.game.spritesheet.get_image(0, 0, 315, 90,sc)]
+        sc = 6/9
+        self.image = self.game.spritesheet3.get_image(0, 174, 1920, 1080,sc)
+                  #self.game.spritesheet.get_image(0, 95, 315, 90,sc)]
+        self.image.set_colorkey(BLACK)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+
+class Obstacle(pg.sprite.Sprite):
+    def __init__(self, game, x,y=HEIGHT-200):
+        pg.sprite.Sprite.__init__(self)
+        self.game = game
+        sc = 0.3
+        images = [self.game.spritesheet1.get_image(0, 0, 172, 277,sc)]
                   #self.game.spritesheet.get_image(0, 95, 315, 90,sc)]
         self.image = choice(images)
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
-
-class Background(pg.sprite.Sprite):
-    def __init__(self, game):
-        pg.sprite.Sprite.__init__(self)
-        self.game = game
-        sc = 6/9
-        self.image = self.game.spritesheet3.get_image(0, 0, 1920, 1080,sc)
-                  #self.game.spritesheet.get_image(0, 95, 315, 90,sc)]
-        self.image.set_colorkey(BLACK)
-        self.rect = self.image.get_rect()

@@ -31,41 +31,40 @@ class Game:
                 self.highscore = int(f.read())
             except:
                 self.highscore = 0
+        # load obstacles
+        self.spritesheet1 = Spritesheet(path.join(img_dir, OBSTACLES))
         # load background
         self.spritesheet3 = Spritesheet(path.join(img_dir, BACKGROUND))
-        # load base sprite
-        self.spritesheet = Spritesheet(path.join(img_dir, SPRITESHEET))
         # load player sprite
-        self.spritesheet2 = Spritesheet(path.join(img_dir, SPRITESHEET2))
+        self.spritesheet2 = Spritesheet(path.join(img_dir, PLAYER))
+
 
     def new(self):
         # start a new game
         self.score = 0
         self.all_sprites = pg.sprite.Group()
         
-        
-        self.platforms = pg.sprite.Group()
+
         self.player = Player(self)
         self.all_sprites.add(self.player)
+        self.obstacles = pg.sprite.Group()
         
-        # Adding platform
-        platform_full=False
-        px = 0
-        while not platform_full:
-            p = Platform(self, px,0)
-            p.rect.y = HEIGHT - p.rect.height + 5
-            px = p.rect.right
+        # Adding obstacles
+        px = WIDTH//2 + random.randrange(1, WIDTH//4)
+        while px < WIDTH:
+            p = Obstacle(self, px)
+            print(px)
+            self.obstacles.add(p)
             self.all_sprites.add(p)
-            self.platforms.add(p)
-            if px >= WIDTH + p.rect.width:
-                platform_full = True
-                #print(px//p.rect.width)
-                self.total_platforms = px//p.rect.width
-                self.right_platform = p.rect.right
-                #print(self.right_platform)
-
+            px = p.rect.left + 150 
+            if px < WIDTH:
+                px = random.randrange(px, WIDTH)
+            
         self.background = Background(self)
         self.all_sprites.add(self.background)
+        self.background2 = Background(self,WIDTH)
+        self.all_sprites.add(self.background2)
+
         self.run()
 
     def run(self):
@@ -82,38 +81,37 @@ class Game:
         self.all_sprites.update()
         # check if player hits a platform - only if falling
         if self.player.vel.y > 0:
-            hits = pg.sprite.spritecollide(self.player, self.platforms, False)
-            if hits:
-                self.player.pos.y = hits[0].rect.top
+            if self.player.pos.y > HEIGHT - 115:
+                self.player.pos.y = HEIGHT - 115
                 self.player.vel.y = 0
 
-        # if platform leaves the screen
-        for plat in self.platforms:
-            #plat.rect.x -= max(abs(self.player.vel.x), 2)
-            if plat.rect.right <= 0:
-                self.right_platform += plat.rect.left 
-                print('destroyed!',self.right_platform)
-                plat.kill()
-                self.score += 10
+        # create new obstacles
+        for obs in self.obstacles:
+            if obs.rect.left < -50:
+                obs.kill()
+                px = WIDTH + random.randrange(1, WIDTH//2)
+                p = Obstacle(self, px)
+                print(px)
+                self.obstacles.add(p)
+                self.all_sprites.add(p)
+
+        if self.background.rect.right < 0:
+            self.background.kill()
+            # Swap background
+            self.background = self.background2
+            # New background
+            self.background2 = Background(self,self.background.rect.left)
+            # Adds to the group of sprites
+            self.all_sprites.add(self.background2)
+
+
 
         # Die!
-        if self.player.rect.bottom > HEIGHT:
+        hits = pg.sprite.spritecollide(self.player, self.obstacles, False)
+        if hits:
             for sprite in self.all_sprites:
-                sprite.rect.y -= max(self.player.vel.y, 10)
-                if sprite.rect.bottom < 0:
-                    sprite.kill()
-        if len(self.platforms) == 0:
+                sprite.kill()
             self.playing = False
-
-        # spawn new platforms to keep same average number
-        if len(self.platforms) < self.total_platforms:
-            
-            p = Platform(self, self.right_platform,HEIGHT)
-            p.rect.y -= p.rect.height + 5
-            self.right_platform = p.rect.right
-            #p.rect.x -= p.rect.width
-            self.platforms.add(p)
-            self.all_sprites.add(p)
 
     def events(self):
         # Game Loop - events

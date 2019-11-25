@@ -5,15 +5,15 @@ HEIGHT = 720
 FPS = 60
 FONT_NAME = 'arial'
 HS_FILE = "highscore.txt"
-SPRITESHEET = "base.png" #"spritesheet_jumper.png"
-SPRITESHEET2 = "dino.jpeg"
+PLAYER = "dino2.png"
 BACKGROUND = 'bg2.jpg'
+OBSTACLES = 'cactus2.png'
 
 # Player properties
 PLAYER_ACC = 0.5
 PLAYER_FRICTION = -0.12
 PLAYER_GRAV = 0.8
-PLAYER_JUMP = 16
+PLAYER_JUMP = 20
 
 # Starting platforms
 #PLATFORM_LIST = [range(6)]
