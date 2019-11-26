@@ -27,6 +27,9 @@ class Player(pg.sprite.Sprite):
         self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
         self.rect.midbottom = (60, HEIGHT - 115)
+        self.collideRect =  pg.rect.Rect((0, 0), (int(self.rect.width*2/3), int(self.rect.height*2/3) ))
+        self.collideRect.center = self.rect.center
+
         self.pos = vec(60, HEIGHT - 115)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
@@ -73,6 +76,7 @@ class Player(pg.sprite.Sprite):
         # Updates y position of player
         self.pos.y += self.vel.y + 0.5 * self.acc.y
         self.rect.midbottom = self.pos
+        self.collideRect.center = self.rect.center
 
         # Move background
         delta = self.vel.x + 0.5 * self.acc.x

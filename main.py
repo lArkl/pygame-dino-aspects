@@ -43,13 +43,23 @@ class Game:
         # start a new game
         self.score = 0
         self.all_sprites = pg.sprite.Group()
-        
 
         self.player = Player(self)
         self.all_sprites.add(self.player)
         self.obstacles = pg.sprite.Group()
-        
+
+        self.background = Background(self)
+        self.all_sprites.add(self.background)
+        self.background2 = Background(self,WIDTH)
+        self.all_sprites.add(self.background2)
+
         # Adding obstacles
+        for x in OBSTACLES_POS:
+            p = Obstacle(self, x)
+            print(x)
+            self.obstacles.add(p)
+            self.all_sprites.add(p)
+        '''
         px = WIDTH//2 + random.randrange(1, WIDTH//4)
         while px < WIDTH:
             p = Obstacle(self, px)
@@ -59,11 +69,7 @@ class Game:
             px = p.rect.left + 150 
             if px < WIDTH:
                 px = random.randrange(px, WIDTH)
-            
-        self.background = Background(self)
-        self.all_sprites.add(self.background)
-        self.background2 = Background(self,WIDTH)
-        self.all_sprites.add(self.background2)
+        '''
 
         self.run()
 
@@ -85,6 +91,26 @@ class Game:
                 self.player.pos.y = HEIGHT - 115
                 self.player.vel.y = 0
 
+        if self.background.rect.right < 0:
+            self.background.kill()
+            # Swap background
+            self.background = self.background2
+            # New background
+            self.background2 = Background(self,self.background.rect.left)
+            # Adds to the group of sprites
+            self.all_sprites.add(self.background2)
+            # Removing obstacles
+            for obs in self.obstacles:
+                if obs.rect.right < 0:
+                    obs.kill()
+            # Adding obstacles
+            for x in OBSTACLES_POS[2:]:
+                p = Obstacle(self, x)
+                print(x)
+                self.obstacles.add(p)
+                self.all_sprites.add(p)
+
+        '''
         # create new obstacles
         for obs in self.obstacles:
             if obs.rect.left < -50:
@@ -94,17 +120,7 @@ class Game:
                 print(px)
                 self.obstacles.add(p)
                 self.all_sprites.add(p)
-
-        if self.background.rect.right < 0:
-            self.background.kill()
-            # Swap background
-            self.background = self.background2
-            # New background
-            self.background2 = Background(self,self.background.rect.left)
-            # Adds to the group of sprites
-            self.all_sprites.add(self.background2)
-
-
+        '''
 
         # Die!
         hits = pg.sprite.spritecollide(self.player, self.obstacles, False)
