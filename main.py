@@ -123,7 +123,12 @@ class Game:
         '''
 
         # Die!
-        hits = pg.sprite.spritecollide(self.player, self.obstacles, False)
+        #hits = pg.sprite.spritecollide(self.player, self.obstacles, False)
+        hits = False
+        for obs in self.obstacles:
+            if self.player.collideRect.colliderect(obs):
+                hits = True
+                break
         if hits:
             for sprite in self.all_sprites:
                 sprite.kill()
