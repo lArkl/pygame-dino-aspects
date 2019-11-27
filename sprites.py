@@ -30,7 +30,7 @@ class Player(pg.sprite.Sprite):
         self.collideRect =  pg.rect.Rect((0, 0), (int(self.rect.width*2/3), int(self.rect.height*2/3) ))
         self.collideRect.center = self.rect.center
 
-        self.pos = vec(60, HEIGHT - 115)
+        self.pos = vec(100, HEIGHT - 115)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
@@ -60,10 +60,8 @@ class Player(pg.sprite.Sprite):
         self.animate()
         self.acc = vec(0, PLAYER_GRAV)
         keys = pg.key.get_pressed()
-        if keys[pg.K_LEFT]:
-            self.acc.x = -PLAYER_ACC
-        if keys[pg.K_RIGHT]:
-            self.acc.x = PLAYER_ACC
+
+        self.acc.x = PLAYER_ACC
 
         # apply friction
         self.acc.x += self.vel.x * PLAYER_FRICTION
@@ -71,7 +69,6 @@ class Player(pg.sprite.Sprite):
         self.vel += self.acc
         if abs(self.vel.x) < 0.1:
             self.vel.x = 0
-        #self.pos += self.vel + 0.5 * self.acc
         
         # Updates y position of player
         self.pos.y += self.vel.y + 0.5 * self.acc.y
@@ -134,7 +131,6 @@ class Background(pg.sprite.Sprite):
         self.game = game
         sc = 6/9
         self.image = self.game.spritesheet3.get_image(0, 174, 1920, 1080,sc)
-                  #self.game.spritesheet.get_image(0, 95, 315, 90,sc)]
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.x = x

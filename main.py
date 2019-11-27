@@ -2,7 +2,6 @@
 # Jumpy! (a platform game) - Part 12
 # Video link: https://youtu.be/qnUVjACD3WM
 # Platform Graphics
-# Art from Kenney.nl
 
 import pygame as pg
 import random
@@ -54,22 +53,16 @@ class Game:
         self.all_sprites.add(self.background2)
 
         # Adding obstacles
-        for x in OBSTACLES_POS:
+        for x in OBSTACLES_POS[1:]:
             p = Obstacle(self, x)
             print(x)
             self.obstacles.add(p)
             self.all_sprites.add(p)
-        '''
-        px = WIDTH//2 + random.randrange(1, WIDTH//4)
-        while px < WIDTH:
-            p = Obstacle(self, px)
-            print(px)
+        for x in OBSTACLES_POS:
+            p = Obstacle(self, WIDTH + x)
+            print(x)
             self.obstacles.add(p)
             self.all_sprites.add(p)
-            px = p.rect.left + 150 
-            if px < WIDTH:
-                px = random.randrange(px, WIDTH)
-        '''
 
         self.run()
 
@@ -104,35 +97,32 @@ class Game:
                 if obs.rect.right < 0:
                     obs.kill()
             # Adding obstacles
-            for x in OBSTACLES_POS[2:]:
-                p = Obstacle(self, x)
+            for x in OBSTACLES_POS:
+                p = Obstacle(self, x+WIDTH)
                 print(x)
                 self.obstacles.add(p)
                 self.all_sprites.add(p)
-
-        '''
-        # create new obstacles
-        for obs in self.obstacles:
-            if obs.rect.left < -50:
-                obs.kill()
-                px = WIDTH + random.randrange(1, WIDTH//2)
-                p = Obstacle(self, px)
-                print(px)
-                self.obstacles.add(p)
-                self.all_sprites.add(p)
-        '''
-
+            self.score += 10
+            # accelerating
+            '''
+            if self.score%100:
+                PLAYER_ACC + = 0.01
+                PLAYER_ACC = 0.8
+            '''
         # Die!
         #hits = pg.sprite.spritecollide(self.player, self.obstacles, False)
+        if self.gotHit():
+            for sprite in self.all_sprites:
+                sprite.kill()
+            self.playing = False
+
+    def gotHit(self):
         hits = False
         for obs in self.obstacles:
             if self.player.collideRect.colliderect(obs):
                 hits = True
                 break
-        if hits:
-            for sprite in self.all_sprites:
-                sprite.kill()
-            self.playing = False
+        return hits
 
     def events(self):
         # Game Loop - events

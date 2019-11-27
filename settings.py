@@ -8,16 +8,15 @@ HS_FILE = "highscore.txt"
 PLAYER = "dino2.png"
 BACKGROUND = 'bg2.jpg'
 OBSTACLES = 'cactus2.png'
-OBSTACLES_POS = [int(x*WIDTH/4)+WIDTH//2 for x in range(5)]
+OBSTACLES_POS = [int(x*WIDTH/4)+WIDTH//5 for x in range(4)]
+OBSTACLES_POS2 = [int(x*WIDTH/4)+WIDTH//2 for x in range(5)]
+OBSTACLES_POS3 = [int(x*WIDTH/4)+WIDTH//2 for x in range(5)]
 
 # Player properties
-PLAYER_ACC = 0.6
+PLAYER_ACC = 0.55
 PLAYER_FRICTION = -0.12
 PLAYER_GRAV = 0.8
 PLAYER_JUMP = 20
-
-# Starting platforms
-#PLATFORM_LIST = [range(6)]
 
 # define colors
 WHITE = (255, 255, 255)
