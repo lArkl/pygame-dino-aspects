@@ -37,6 +37,13 @@ class Game:
         # load player sprite
         self.spritesheet2 = Spritesheet(path.join(img_dir, PLAYER))
 
+        # load jump sound
+        self.jump_sound = pg.mixer.Sound(path.join(self.dir,'snd', JUMP_SOUND))
+
+    def play_music(self,audio_name):
+        pg.mixer.music.load(path.join(self.dir, 'snd', audio_name))
+        pg.mixer.music.play(loops=-1)
+
 
     def new(self):
         # start a new game
@@ -53,31 +60,30 @@ class Game:
         self.all_sprites.add(self.background2)
 
         # Adding obstacles
-        for x in OBSTACLES_POS[1:]:
-            p = Obstacle(self, x)
-            print(x)
-            self.obstacles.add(p)
-            self.all_sprites.add(p)
-        for x in OBSTACLES_POS:
-            p = Obstacle(self, WIDTH + x)
-            print(x)
-            self.obstacles.add(p)
-            self.all_sprites.add(p)
+        self.add_obstacles(OBSTACLES_POS2[1:])
+        self.add_obstacles(OBSTACLES_POS,WIDTH)
 
         self.run()
 
     def run(self):
         # Game Loop
         self.playing = True
+
+        # play music
+        self.play_music(INIT_MUSIC)
+
         while self.playing:
             self.clock.tick(FPS)
             self.events()
             self.update()
             self.draw()
+        pg.mixer.music.fadeout(MUSIC_FADE)
 
     def update(self):
         # Game Loop - Update
         self.all_sprites.update()
+        self.obstacles.update()
+
         # check if player hits a platform - only if falling
         if self.player.vel.y > 0:
             if self.player.pos.y > HEIGHT - 115:
@@ -96,27 +102,33 @@ class Game:
             for obs in self.obstacles:
                 if obs.rect.right < 0:
                     obs.kill()
+            
             # Adding obstacles
-            for x in OBSTACLES_POS:
-                p = Obstacle(self, x+WIDTH)
-                print(x)
-                self.obstacles.add(p)
-                self.all_sprites.add(p)
+            self.add_obstacles(choice([OBSTACLES_POS,OBSTACLES_POS2]),WIDTH)
             self.score += 10
+
             # accelerating
             '''
-            if self.score%100:
-                PLAYER_ACC + = 0.01
-                PLAYER_ACC = 0.8
+            if self.score%40==0:
+                if PLAYER_ACC < 0.8:
+                    PLAYER_ACC += 0.01
             '''
+
         # Die!
-        #hits = pg.sprite.spritecollide(self.player, self.obstacles, False)
-        if self.gotHit():
+        if self.got_hit():
             for sprite in self.all_sprites:
+                sprite.kill()
+            for sprite in self.obstacles:
                 sprite.kill()
             self.playing = False
 
-    def gotHit(self):
+    def add_obstacles(self,obstacles_pos,deltax=0):
+        for x in obstacles_pos:
+            p = Obstacle(self, deltax + x)
+            print(deltax + x)
+            self.obstacles.add(p)
+
+    def got_hit(self):
         hits = False
         for obs in self.obstacles:
             if self.player.collideRect.colliderect(obs):
@@ -136,16 +148,26 @@ class Game:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
 
+    def draw_sequence(self):
+        '''
+        Draws player and background first and then the obstacles
+        '''
+        self.all_sprites.draw(self.screen)
+        self.obstacles.draw(self.screen)
+
     def draw(self):
         # Game Loop - draw
         self.screen.fill(BGCOLOR)
-        self.all_sprites.draw(self.screen)
+        #self.all_sprites.draw(self.screen)
+        self.draw_sequence()
         self.screen.blit(self.player.image, self.player.rect)
         self.draw_text(str(self.score), 22, WHITE, WIDTH / 2, 15)
         # *after* drawing everything, flip the display
         pg.display.flip()
 
     def show_start_screen(self):
+        self.play_music(GAMEOVER_MUSIC)
+
         # game splash/start screen
         self.screen.fill(BGCOLOR)
         self.draw_text(TITLE, 48, WHITE, WIDTH / 2, HEIGHT / 4)
@@ -155,10 +177,15 @@ class Game:
         pg.display.flip()
         self.wait_for_key()
 
+        pg.mixer.music.fadeout(MUSIC_FADE)
+
     def show_go_screen(self):
         # game over/continue
         if not self.running:
             return
+
+        self.play_music(GAMEOVER_MUSIC)       
+
         self.screen.fill(BGCOLOR)
         self.draw_text("GAME OVER", 48, WHITE, WIDTH / 2, HEIGHT / 4)
         self.draw_text("Score: " + str(self.score), 22, WHITE, WIDTH / 2, HEIGHT / 2)
@@ -172,6 +199,8 @@ class Game:
             self.draw_text("High Score: " + str(self.highscore), 22, WHITE, WIDTH / 2, HEIGHT / 2 + 40)
         pg.display.flip()
         self.wait_for_key()
+
+        pg.mixer.music.fadeout(MUSIC_FADE)
 
     def wait_for_key(self):
         waiting = True

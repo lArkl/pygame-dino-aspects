@@ -55,6 +55,7 @@ class Player(pg.sprite.Sprite):
         # jump only if standing on a platform
         if self.pos.y == HEIGHT - 115:
             self.vel.y = -PLAYER_JUMP
+            self.game.jump_sound.play()
 
     def update(self):
         self.animate()
@@ -78,12 +79,13 @@ class Player(pg.sprite.Sprite):
         # Move background
         delta = self.vel.x + 0.5 * self.acc.x
         self.game.background.rect.x -= delta
-        self.game.background2.rect.x = self.game.background.rect.right 
+        self.game.background2.rect.x = self.game.background.rect.right
         
         # Move obstacles
         for obs in self.game.obstacles:
             obs.rect.x -= delta
-        
+        #print(self.vel.x)
+
     def animate(self):
         now = pg.time.get_ticks()
         if self.vel.x != 0:
