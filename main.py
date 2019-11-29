@@ -40,6 +40,9 @@ class Game:
         # load jump sound
         self.jump_sound = pg.mixer.Sound(path.join(self.dir,'snd', JUMP_SOUND))
 
+        # load hit sound
+        self.hit_sound = pg.mixer.Sound(path.join(self.dir,'snd', HIT_SOUND))
+        
     def play_music(self,audio_name):
         pg.mixer.music.load(path.join(self.dir, 'snd', audio_name))
         pg.mixer.music.play(loops=-1)
@@ -132,6 +135,7 @@ class Game:
         hits = False
         for obs in self.obstacles:
             if self.player.collideRect.colliderect(obs):
+                self.hit_sound.play()
                 hits = True
                 break
         return hits
