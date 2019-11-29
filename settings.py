@@ -13,6 +13,7 @@ OBSTACLES_POS2 = [int(x*WIDTH) for x in [0.21,0.42,0.63,0.86]]
 
 # Define sounds
 JUMP_SOUND = 'Jump.wav'
+HIT_SOUND = 'Hit.wav'
 INIT_MUSIC = 'Happy Tune.ogg'
 GAMEOVER_MUSIC = 'Yippee.ogg'
 MUSIC_FADE = 200
