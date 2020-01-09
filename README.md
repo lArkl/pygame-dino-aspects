@@ -4,4 +4,12 @@ Based on the repository: https://github.com/kidscancode/pygame_tutorials/tree/ma
 
 ## Sources
 Background: https://craftpix.net/freebies/free-horizontal-2d-game-backgrounds/
+
 Dinosaur: https://opengameart.org/content/free-dino-sprites
+
+## Demo
+![](img/screen.JPG)
+
+
+
+https://www.youtube.com/watch?v=ICjnwLJsvcM
